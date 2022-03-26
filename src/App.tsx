@@ -1,26 +1,85 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import {
+    Box,
+    Container,
+    createTheme,
+    CssBaseline,
+    ThemeProvider,
+} from '@mui/material'
+import { GridColDef, GridSelectionModel } from '@mui/x-data-grid'
+import { useState } from 'react'
+import './App.css'
+import { AddParcel } from './components/AddParcel'
+import { ParcelTable } from './components/ParcelTable'
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+const theme = createTheme({
+    palette: {
+        mode: 'dark',
+    },
+})
+
+export interface Parcel {
+    id: string
+    name: string
+    date: string
+    tracking?: {
+        id: string
+    }
+}
+export interface Row {
+    id: string
+    orderName: string
+    orderDate: string
 }
 
-export default App;
+function App() {
+    const [parcelOrderList, setParcelOrderList] = useState<Parcel[]>([])
+
+    const handleParcelOrder = (parcel: Parcel): void => {
+        setParcelOrderList([...parcelOrderList, parcel])
+    }
+
+    const handleRemoveParcelOrders = (
+        parcelIdList: GridSelectionModel
+    ): void => {
+        const newParcelOrders = parcelOrderList.filter((parcelOrder) => {
+            return !parcelIdList.includes(parcelOrder.id)
+        })
+
+        setParcelOrderList(newParcelOrders)
+    }
+
+    const columns: GridColDef[] = [
+        { field: 'orderName', headerName: 'Order name' },
+        { field: 'orderDate', headerName: 'Date' },
+        { field: 'orderTracking', headerName: 'Tracking ID' },
+    ]
+
+    const rows: Row[] = parcelOrderList.map((parcelOrder) => {
+        return {
+            id: parcelOrder.id,
+            orderName: parcelOrder.name,
+            orderDate: parcelOrder.date,
+            orderTracking: parcelOrder.tracking?.id,
+        }
+    })
+
+    return (
+        <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <Container maxWidth="md" sx={{ mt: 8 }}>
+                <AddParcel addParcel={handleParcelOrder} />
+                <Box sx={{ mt: 8, height: 500 }}>
+                    {parcelOrderList.length ? (
+                        <ParcelTable
+                            columns={columns}
+                            rows={rows}
+                            removeParcelOrders={handleRemoveParcelOrders}
+                        />
+                    ) : null}
+                </Box>
+            </Container>
+        </ThemeProvider>
+    )
+}
+
+export default App
