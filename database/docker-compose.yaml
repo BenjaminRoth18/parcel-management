@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  flyway:
+      image: flyway/flyway:latest
+      command: -locations=filesystem:/flyway/sql -url=jdbc:postgresql://database:5432/parcel_management -user=root -password=${REACT_APP_DB_PASSWORD} -baselineOnMigrate=false -connectRetries=60 migrate
+      volumes:
+        - ${PWD}/sql/migrations:/flyway/sql
+      depends_on:
+        - database
+  database:
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: ${REACT_APP_DB_PASSWORD}
+      POSTGRES_DB: parcel_management
